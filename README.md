@@ -46,7 +46,10 @@ SEMICO controller's own firmware doing this, not Linux, not the DE, not a key
 combo, not `kanata`, not vn/a your hub. The Linux side merely *sees* it.
 
 Full forensic tale: [analysis/MASTER-ISSUE.md](analysis/MASTER-ISSUE.md) —
-the canonical defect report + workaround + roadmap; raw byte ledger in
+the canonical defect report + workaround + roadmap; the **per-connection-mode
+behavior record** in
+[analysis/MODE-DIFFERENTIAL.md](analysis/MODE-DIFFERENTIAL.md); raw byte
+ledger in
 [analysis/evidence-ledger.md](analysis/evidence-ledger.md); investigation
 snapshot in
 [analysis/k552-keyboard-investigation-snapshot.md](analysis/k552-keyboard-investigation-snapshot.md).

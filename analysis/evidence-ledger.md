@@ -31,6 +31,10 @@ keyboard is idle**, in wired mode AND over the 2.4G dongle.
 | 23:52:19–:27 | wired (post dongle-in) | 5 frames over 8 s | held-bundle; manual redoes |
 | 00:14:38 | **2.4G dongle** (`hidraw10`, Dev 15) | 1 frame | **auto-recovered by guard** (`USBDEVFS_RESET ok`) |
 | 13:42:20–:42 | **2.4G dongle** | burst + `0x52 UP`/`0x10 M`/`0x05 B` interleave | 3 × guard resets; ghost state persisted; needed physical replug |
+| 13:54:51 | **2.4G dongle** | 1 frame → guard reset ok; 2 follow-up frames swallowed before self-clear | |
+| 14:43:57–:44:09 | **2.4G dongle** | 8 frames / **guard resets ×2** / no disconnects | user: "takes a while to get back into functional mode" (~10+ s) — radio-mode baseline |
+
+→ Per-mode recovery summary: [`MODE-DIFFERENTIAL.md`](MODE-DIFFERENTIAL.md).
 
 ## Modifier trail (the phantom keys at the OS level)
 

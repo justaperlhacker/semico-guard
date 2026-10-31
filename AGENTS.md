@@ -127,6 +127,10 @@ never set in real bursts and matched nothing. The v3→v4 step removed a bogus
 * `README.md` — user-facing entry; links the canonical defect report.
 * `analysis/MASTER-ISSUE.md` — the defect record + roadmap (for agents: your
   TODO dispatch; update statuses only with evidence).
+* `analysis/MODE-DIFFERENTIAL.md` — the per-mode behavior record (wired vs
+  2.4G vs BT): what the wedge looks like, what the guard can fix per
+  transport, measured recovery times, and the measurement matrix that the
+  resetv2/keepalive experiments compare against.
 * `analysis/evidence-ledger.md` — raw byte ledger; the single source of truth
   for reproduce data.
 * `resetv2/README.md` — the capture plan and open questions.

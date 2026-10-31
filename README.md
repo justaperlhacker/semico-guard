@@ -102,8 +102,12 @@ repository makes the workaround reproducible for anyone with the same
 keyboard, and centralizes the evidence needed by anyone filing the RMA /
 support ticket.
 
-**Read only** for now (no PRs) while we settle whether v2 (over-the-radio
-factory reset over the dongle's vendor channel) is viable.
+**Development status:** v1 (multi-transport wedge detection + wired auto-recovery)
+is live and battle-tested on the author's machine. `resetv2/` — the
+over-the-air factory reset via the dongle's vendor channel — is in progress.
+Issues/PRs welcome; hardware-wise, if you own a K552-KRS and see the same
+`Esc+Tab+Grave+Caps` phantom on *your* unit, the author would love your
+capture data.
 
 ## License
 

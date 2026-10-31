@@ -1,5 +1,20 @@
+# logs / captures / local evidence dumps
 *.log
 *.cap
+*.pcapng
 *.pcap
+# python
 __pycache__/
 *.pyc
+*.pyo
+# editors / OS noise
+.*swp
+*~
+.idea/
+.vscode/
+# local-only flash-kit binaries (vendor-proprietary; see flash-kit-reference.md)
+*.exe
+*.sys
+*.inf
+*.cat
+flash-kit/*

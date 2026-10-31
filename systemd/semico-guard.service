@@ -1,0 +1,12 @@
+[Unit]
+Description=Auto-recovery for Redragon K552 (SEMICO) firmware wedge
+Documentation=file:///home/johnm/k552-keyboard-investigation.md
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/semico-guard
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

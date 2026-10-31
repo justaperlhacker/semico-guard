@@ -63,6 +63,56 @@ Install: `sudo ./install.sh` (see README). Live log:
 | 5 | Publish evidence to sister-victim channels (Fedora `1a2c:7807` thread, r/linux4noobs `1a2c:4094` thread, `dokutan/rgb_keyboard#26` cross-link) — first byte-level public record anywhere | pending |
 | 6 | RMA packet (`analysis/*` byte ledger + transport-dual repro) if the keyboard's warranty still applies | optional |
 
+## Rung items (the custom-firmware ladder — FILED as future work)
+
+All three rungs of the ladder are now **documented and slated as future work**
+in [`analysis/CUSTOM-FIRMWARE.md`](analysis/CUSTOM-FIRMWARE.md) — the file
+outlines the honest feasibility (blockers: vendor closure, likely COB
+packaging, unknown Code-Security state) and the *experiment ladder* that
+turns it from vaporware into a bounded project **only if tonight's E1
+capture reveals a plaintext ISP protocol**:
+
+* **Rung E1 — capture the vendor ISP session** *(shared with Item 1 above —
+  same recording, zero extra work)*. Records Redragon's own flasher driving
+  the `1a2c:7f08` bootloader byte-for-byte. Gate: protocol plaintext?
+* **Rung E2/E3 — read-back / byte-identical write-back** *(future)*. With a
+  working read-back we archive a **recovery image** (nothing official
+  publishes one); with write-back verified, the chip is fully understood.
+  Gate: no Code-Security lock in the captured session.
+* **Rung E4 — patch stock image** *(future)*. Locate the wedge branch
+  dynamically and NOP it in the stock `defineV9` image; flash once.
+  This would **fix the defect at firmware level** with the *vendor's own
+  code* (not redistributable, but it fixes *our* board). Only afterwards
+  would the much bigger quest (clean-room QMK port to this unknown chip,
+  Rung E5) even be considered.
+
+Decision rule (from `CUSTOM-FIRMWARE.md`): if E1's ISP traffic is plaintext
+and page-addressable → archive the recovery image and park the file as
+"feasible, waiting for a sacrificial unit". If it is opaque/encrypted →
+close the file as infeasible without vendor insider access and re-anchor the
+project on resetv2/keepalive.
+
+## Long-arc item: our own SEMICO firmware (future, high-effort)
+
+Filed as a **future-work** item — see [`analysis/CUSTOM-FIRMWARE.md`](analysis/CUSTOM-FIRMWARE.md)
+for the honest feasibility analysis. Short version: building a replacement
+firmware for this chip is blocked on vendor closure (no datasheet, no SDK, no
+public ISP spec, likely COB packaging), BUT the door isn't welded shut:
+
+* The board *has* an ISP bootloader mode (re-enumerates as `1a2c:7f08`).
+* Redragon's own flasher drives that bootloader over HID — and when it does,
+  a `usbmon` host-side tap will record the **entire ISP session in
+  plaintext**. That capture is the *decisive* datapoint: if the protocol is
+  plain (cheap vendors often are), a "safe firmware write" path becomes
+  possible in future, and with it a truly wedge-free image.
+* The capture for #2 and the ISP capture are the **same recording** — one
+  session, both artifacts. Step 2 of the tonight-session already collects it.
+
+Nothing in this item is load-bearing for the working keyboard: rungs 1–3 of
+the table are the practical fix; this only matters if we ever choose the
+"surgical" path or a future donor unit appears.
+
+
 ## Related cases (sister keyboards / SEMICO family)
 
 * `1a2c:7807` — "SEMICO USB Gaming Keyboard" self-drops every 5 s on Linux

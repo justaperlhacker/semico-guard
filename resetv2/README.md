@@ -1,5 +1,12 @@
 # resetv2 — over-the-air factory reset (WIP)
 
+> UI language note: the KUMARA app has a language selector (Chinese / English
+> via `语言` dropdown in the settings dialog). Same commands either way —
+> the click targets this session will be (English UI labels):
+> settings gear → **Restore Factory Settings**, and the *online update*
+> buttons are **Driver Update / Firmware Update** (firmware one is
+> the "already latest" no-op we're NOT clicking).
+
 **Goal:** when the K552 wedges *while in 2.4G mode*, clear the keyboard's stuck
 state remotely by replaying the vendor "restore factory settings"
 (`恢复出厂设置`) command to the **dongle's vendor interface**

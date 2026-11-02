@@ -12,7 +12,7 @@
 |---|---|---|---|---|---|
 | **Wired** (`1a2c:7504`) | ✅ 6+ events | ✅ instant | **✅ full cure** (port reset reboots MCU) | none needed | **~0.2–1 s** (1 reset, 1-and-done) |
 | **2.4G radio** (`1a2c:7fff` dongle) | ✅ 3 events (incl. 1 storm) | ✅ instant | ⚠️ **partial** (resets the *dongle* link only; keyboard state persists) | belly switch OFF→ON (MCU power cycle), physical replug, KUMARA over dongle (rest of this repo) | **~10 s** (self-clears occasionally) to **minutes** (needs manual) |
-| **Bluetooth** (`0005:1A2C:7FFF` via uhid) | ✅ live (paired, name `BT 5.0-2`), more stable per user report but still wedges occasionally | ✅ **shipped in v5** (journal + transport stamped) | ❌ **no remote cure possible** — vendor channel absent over BT (Redragon docs; verified live: BT HID has 1 hidraw node, no MI_02) | belly switch OFF→ON (MCU power cycle) | first BT wedges journaling now; recovery unmeasured |
+| **Bluetooth** (`0005:1A2C:7FFF` via uhid) | **✅ least frequent** (Nov 2: 3–4 wedges in ~2.5 h; user: "more stable, still stuck occasionally") | ✅ shipped v5 (journal + transport stamped) | ❌ vendor channel absent over BT — **no remote cure possible**; only *untested* idea: attempt the captured vendor-reset bytes over BT HID SET_REPORT (needs tonight's capture) | belly switch OFF→ON (~3 s manual); otherwise **self-clears in ~10 s** | ✅ measured: ~10 s self-recovery consistently
 
 Conclusion so far: **wired is the mode with a complete cure today**;
 radio needs the resetv2 vendor-reset (or manual) to match; BT is

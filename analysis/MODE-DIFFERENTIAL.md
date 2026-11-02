@@ -100,6 +100,46 @@ detection-only by design.
 * Firmware fixed? Upstream says "already latest" — no. (Vendor's own
   update server reports shipped `defineV9 20260316` as current.)
 
+## Power-management hypothesis — status: plausible test, not yet proven
+
+Reasoning for the persistent "idle-triggered" pattern (every wedge so far
+happened while the keyboard was idle or at typing pauses; none mid-burst):
+
+1. **OS-side USB PM is exculpated** for the wired path: port's
+   `power/control` was `on` (runtime suspend disabled) all along — wedges
+   still happened. But the keyboard likely has *internal* idle paths
+   (backlight timers, radio sleep), whose wake glitch would fire in every
+   transport — matching what we've seen.
+2. **Sister case supports a firmware-side watchdog/idle semantics**: the
+   SEMICO chip demonstrably embeds host-traffic watchdogs (montech cooler:
+   LCD died when host writes paused >1 s). The keyboard's own idle
+   behavior may have an analogous broken wake race.
+3. **BT is a natural lab for it**: BT has its own link/idle state machine,
+   and our BT wedge (Nov 2 13:17) *dropped the link* (the evdev recorder
+   died with `OSError 19` at the same second).
+
+### Instrumentation now armed for the next wedge
+
+* `btmon` → `/tmp/opencode/bti.btmon`: full HCI trace of the next BT wedge
+  — will show whether the link actually *drops*, and the HCI-level
+  sequence around it.
+* Guard journaling: every wedge transport-stamped (all three modes).
+* USB dynamic-debug: re-arm (`echo "module usbcore +p" >
+  /sys/kernel/debug/dynamic_debug/control`) **before plugging the dongle
+  back in**, so a wired/dongle wedge lands with suspend/resume trace
+  context.
+
+### The designed experiment for this hypothesis (roadmap items 3–4)
+
+The keepalive test: with the dongle connected, a small root timer sends a
+benign vendor ping every 30–60 s across idle windows. If idle wedges
+flatten → the trigger boundary is the keyboard's idle-timeout logic
+exactly as the watchdog hypothesis predicts, and we ship "prevention"
+instead of "cure". Note the BT path *cannot* run keepalive (no vendor
+channel there) — so the comparison stays clean: BT keeps wedging
+(pattern unchanged), wired/dongle flatten. BT's role in the experiment
+is the *control arm*.
+
 ## What this differential record is for
 
 1. **RMA / support-packet**: two transports with *the same* byte signature is

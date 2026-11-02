@@ -61,6 +61,7 @@ Install: `sudo ./install.sh` (see README). Live log:
 | 3 | Guard second stage (optional, config-gated): wedge on dongle → dongle reset → if frames continue > 3 s → send command #2 over the air | pending #2 |
 | 4 | **Keepalive experiment** (hypothesis from sister case): SEMICO firmware has a *watchdog* that misbehaves when host vendor traffic is quiet (documented for `1a2c:4e85` in montech's cooler driver) → send a benign vendor ping every 30–60 s; if idle wedges *stop*, we have prevention, not just cure | designed; run after #2 |
 | 5 | Publish evidence to sister-victim channels (Fedora `1a2c:7807` thread, r/linux4noobs `1a2c:4094` thread, `dokutan/rgb_keyboard#26` cross-link) — first byte-level public record anywhere | pending |
+| 5b | **BT mode: shipped** — user paired the board over BT (more stable, still wedges occasionally); guard v5 detects BT wedges (`0005:1A2C:7FFF`/uhid) & journals them. Cure impossible over BT (vendor channel absent — verified live). Detection-only, like the roadmap predicted | **shipped 2026-11-02** |
 | 6 | RMA packet (`analysis/*` byte ledger + transport-dual repro) if the keyboard's warranty still applies | optional |
 
 ## Rung items (the custom-firmware ladder — FILED as future work)

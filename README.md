@@ -92,12 +92,15 @@ semico-guard: USBDEVFS_RESET ok
 
 ## Bluetooth support
 
-- **Detection**: yes (BT-paired K552s enumerate as `0005:1A2C` via `uhid`;
-  widen `VENDOR_RE` — see `tooling/`).
-- **Auto-reset (radio-reset v2)**: no. The vendor feature channel that carries
-  a factory-reset is not exposed over BT (Redragon's own software states
-  "software not available in Bluetooth mode"). With BT you get the same
-  *detection + journal daycare*, plus the manual replug fallback.
+- **Detection: SHIPPED (guard v5, 2026-11-02).** BT-paired K552s enumerate
+  as `0005:1A2C:7FFF` via `uhid` (same SEMICO identity — nice); BT frame
+  layout differs (no report-id byte) and the guard dispatches per-source.
+- **Auto-reset: NOT possible over BT.** Live verification: the BT HID node
+  exposes a single hidraw (no vendor interface composition), i.e. the
+  factory-reset channel is absent — matching Redragon's own "software not
+  available in Bluetooth mode". On a BT wedge the guard *journals* it and
+  logs the instruction to power-cycle via the belly switch; the physical
+  replug fallback applies only to the wired path.
 
 ## Why is this a repo?
 

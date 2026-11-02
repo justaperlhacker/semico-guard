@@ -12,7 +12,7 @@
 |---|---|---|---|---|---|
 | **Wired** (`1a2c:7504`) | ✅ 6+ events | ✅ instant | **✅ full cure** (port reset reboots MCU) | none needed | **~0.2–1 s** (1 reset, 1-and-done) |
 | **2.4G radio** (`1a2c:7fff` dongle) | ✅ 3 events (incl. 1 storm) | ✅ instant | ⚠️ **partial** (resets the *dongle* link only; keyboard state persists) | belly switch OFF→ON (MCU power cycle), physical replug, KUMARA over dongle (rest of this repo) | **~10 s** (self-clears occasionally) to **minutes** (needs manual) |
-| **Bluetooth** | not exercised | designed-in (вести `0005:1A2C` uhid widening) | ❌ out of scope (vendor channel absent per Redragon docs) | power cycle | unmeasured |
+| **Bluetooth** (`0005:1A2C:7FFF` via uhid) | ✅ live (paired, name `BT 5.0-2`), more stable per user report but still wedges occasionally | ✅ **shipped in v5** (journal + transport stamped) | ❌ **no remote cure possible** — vendor channel absent over BT (Redragon docs; verified live: BT HID has 1 hidraw node, no MI_02) | belly switch OFF→ON (MCU power cycle) | first BT wedges journaling now; recovery unmeasured |
 
 Conclusion so far: **wired is the mode with a complete cure today**;
 radio needs the resetv2 vendor-reset (or manual) to match; BT is
@@ -67,17 +67,22 @@ detection-only by design.
      building*: the same command replayed from Linux into `hidraw12`
      (dongle MI_02), turning this manual rescue into an automatic one.
 
-## Bluetooth mode
+## Bluetooth mode — **live since 2026-11-02, guard v5 ships detection**
 
-* Not exercised (no pairing session recorded yet).
-* The vendor's own documentation says the KUMARA software "is not available
-  in Bluetooth mode" — the vendor feature channel (which reset-v2 needs) is
-  therefore *presumed absent* in BT mode.
-* BT-paired HID arrives on Linux via `uhid` with sysfs identity
-  `0005:1A2C:7504.X` — the guard's regex can recognize it with a small
-  widening (proposed: cover it for *detection + journal only*).
-* Practical fallback in BT if wedged: power-cycle via belly switch; replug
-  isn't applicable; the vendor app *cannot* rescue BT wedges.
+* Paired today as `BT 5.0-2` (`1B:9C:46:46:8D:CE`); HID arrives via `uhid` as
+  `0005:1A2C:7FFF` — SEMICO identity *is* preserved over BT (nice finding:
+  the BT HID descriptor identifies the same vendor/product as the dongle).
+* BT frame layout **differs from USB** (captured live, see
+  `bt-hidraw-snapshot.log`): `[mods, reserved, keys...]` — *no report id*
+  byte. The guard's `analyze()` now dispatches per-source (node `bt` flag).
+* **Vendor channel is ABSENT over BT**: the BT-connected HID exposes only
+  one hidraw node (no MI_01/MI_02 composition, unlike the USB paths) —
+  i.e. **no remote factory-reset is possible over BT**, which confirms
+  Redragon's own "software not available in Bluetooth mode" statement.
+* User experience (Nov 2): BT mode is *more stable* than wired/2.4G, but
+  still stucks occasionally. The guard now journals those wedges with the
+  BT transport stamp; manual rescue remains the belly-switch power cycle.
+
 
 ## Measurement matrix — counts & key events (through 2026-10-31 14:45 EDT)
 

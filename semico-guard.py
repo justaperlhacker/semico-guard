@@ -20,7 +20,7 @@ import re
 import select
 import time
 
-VENDOR_RE = re.compile(r'0003:1A2C:(7504|7FFF)', re.I)  # wired + 2.4G modes
+VENDOR_RE = re.compile(r'000[35]:1A2C:(7504|7FFF)', re.I)  # wired 0003 + 2.4G 0003 + BT 0005 (uhid)
 USBDEVFS_RESET = 0x5514
 MOD_ALWAYS = 0x00
 KEY_ESC, KEY_TAB, KEY_GRAVE, KEY_CAPS = 0x29, 0x2B, 0x35, 0x39
@@ -31,13 +31,23 @@ def log(msg):
 
 
 def find_nodes():
-    """return list of dict for EVERY K552-family interface 0 hidraw node."""
+    """return list of dict for EVERY K552-family interface-0-equivalent hidraw node.
+
+    USB (0003:...) nodes need bInterfaceNumber==0 walking.
+    BT (uhid, 0005:...) nodes have NO USB-style parents -- accept them directly
+    (single hidraw node; no usb reset possible -> usb=None).
+    """
     out = []
     for sysnode in sorted(glob.glob('/sys/class/hidraw/hidraw*'), key=lambda p: (len(p), p)):
         real = os.path.realpath(sysnode)
         if not VENDOR_RE.search(real):
             continue
-        # walk upward until we find the interface dir that has bInterfaceNumber
+        is_bt = '0005:' in real or '/uhid/' in real
+        dev = '/dev/' + os.path.basename(sysnode)
+        if is_bt:
+            out.append({'freq': dev, 'usb': None, 'bt': True, 'sys': real})
+            log('candidate: %s (BT/uhid)' % dev)
+            continue
         cursor = real
         ifn = None
         for _ in range(5):
@@ -48,10 +58,8 @@ def find_nodes():
                 break
             except OSError:
                 continue
-        if ifn != 0:
+        if ifn is None or ifn != 0:
             continue
-        dev = '/dev/' + os.path.basename(sysnode)
-        # climb from the interface dir to the usb parent that carries busnum/devnum
         usb_root = cursor
         usb_path = None
         for _ in range(3):
@@ -63,8 +71,9 @@ def find_nodes():
                 break
             except OSError:
                 continue
-        out.append({'freq': dev, 'usb': usb_path})
+        out.append({'freq': dev, 'usb': usb_path, 'bt': False, 'sys': real})
         log('candidate: %s (usb %s)' % (dev, usb_path))
+    return out
     return out
 
 
@@ -79,21 +88,26 @@ def usb_reset(path):
         os.close(fd)
 
 
-def analyze(frame):
-    """return (wedge, mods-for-log) for a boot-keyboard frame."""
+def analyze(frame, bt_frame=False):
+    """return (wedge, mods-for-log) for a boot-keyboard frame.
+
+    BT (uhid) frames carry NO report id: [mods, reserved, keys...].
+    USB (wired/dongle) frames carry a report id first: [rid, mods, res, keys...].
+    Dispatched by source node ('bt' flag), else the two shapes collide.
+    """
     if len(frame) < 8:
         return False, None
-    rid = frame[0]
-    if rid not in (0x01, 0x02, 0x03):
-        return False, None
-    modifiers = frame[1]
-    keys = frozenset(frame[2:9]) - {0}
-    # wedge: Esc+Tab+Grave held as a bundle (Caps usually too). Keys-only,
-    # modifier bits unreliable in real bursts. Covered BOTH report ids (2 and 3).
+    if bt_frame:
+        modifiers = frame[0]
+        keys = frozenset(frame[2:8]) - {0}
+    else:
+        rid = frame[0]
+        if rid not in (0x02, 0x03):
+            return False, None
+        modifiers = frame[1]
+        keys = frozenset(frame[2:9]) - {0}  # note: NO reserved byte in these frames (v4 rule)
     wedge = {KEY_ESC, KEY_TAB, KEY_GRAVE} <= keys
-    if wedge:
-        return True, modifiers
-    return False, None
+    return (True, modifiers) if wedge else (False, None)
 
 
 def main():
@@ -140,14 +154,17 @@ def main():
                         os.close(fd)
                         del fds[fd]
                         break
-                    hit, mods = analyze(data)
+                    hit, mods = analyze(data, node.get('bt', False))
                     if hit or trace_mode:
                         log('[%s] frame %s mods=%02x -> %s' %
                             (node['freq'], data.hex(), mods or 0, 'HIT' if hit else 'trace'))
                         if hit and time.time() - cooldown_until > 3.0:
                             cooldown_until = time.time() + 3.0
-                            log('WEDGE SIGNATURE -> resetting %s' % node['usb'])
-                            if node['usb']:
+                            if node.get('bt'):
+                                log('WEDGE SIGNATURE on BT -> no vendor channel over BT;'
+                                    ' journaling only: power-cycle via belly switch to clear')
+                            elif node['usb']:
+                                log('WEDGE SIGNATURE -> resetting %s' % node['usb'])
                                 try:
                                     r_ok, r_err = usb_reset(node['usb'])
                                     log('USBDEVFS_RESET %s%s' % (

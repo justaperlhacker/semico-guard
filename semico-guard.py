@@ -98,8 +98,14 @@ def analyze(frame, bt_frame=False):
     if len(frame) < 8:
         return False, None
     if bt_frame:
+        # BT frames start with a modifier byte; most wedges carry the same
+        # rid-3 bundle *inside* the BT report: [mods][rid3][res][keys...]
+        # (seen live 13:17:57 Nov 2). Tolerate both layouts:
         modifiers = frame[0]
-        keys = frozenset(frame[2:8]) - {0}
+        if frame[1] in (0x02, 0x03):
+            keys = frozenset(frame[3:9]) - {0}
+        else:
+            keys = frozenset(frame[2:8]) - {0}
     else:
         rid = frame[0]
         if rid not in (0x02, 0x03):

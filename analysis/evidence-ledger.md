@@ -33,6 +33,16 @@ keyboard is idle**, in wired mode AND over the 2.4G dongle.
 | 13:42:20–:42 | **2.4G dongle** | burst + `0x52 UP`/`0x10 M`/`0x05 B` interleave | 3 × guard resets; ghost state persisted; needed physical replug |
 | 13:54:51 | **2.4G dongle** | 1 frame → guard reset ok; 2 follow-up frames swallowed before self-clear | |
 | 14:43:57–:44:09 | **2.4G dongle** | 8 frames / **guard resets ×2** / no disconnects | user: "takes a while to get back into functional mode" (~10+ s) — radio-mode baseline |
+| **Nov 2 13:17:57 + 13:18:07** | **Bluetooth** (`0103 0029 2b35 39…` = `[mods LCtrl-down][rid3][mods 0x03][keys…]`) | 2 frames 10 s apart — **third ghost encoding found**: BT rides a modifier-frame prefix and sets modifier bits *inside* the rid3 bundle (unset over USB!) | guard v5 caught live; user experienced the stuck state |
+
+* **BT frame shapes** (see `bt-hidraw-snapshot.log` — BT boot report `[mods,
+  res, keys…]` with *no report id byte*; and the ghost variant riding the
+  rid-3 bundle *with* modifier bits set — see above). The guard's analyzer
+  dispatches per-source and tolerates both layouts since v5.1.
+* **BT link drop accompanying the wedge**: the BT evdev recorder died with
+  `OSError 19 (No such device)` right when the wedge hit — the wedge can
+  also drop the *Bluetooth* link, not just over USB. Another data point for
+  "the wedge is in the MCU, spanning every transport it speaks."
 
 → Per-mode recovery summary: [`MODE-DIFFERENTIAL.md`](MODE-DIFFERENTIAL.md).
 

@@ -112,8 +112,9 @@ tabs and help windows.
 
 MITIGATION applied: app-level "no-op the ghost chords" (kitty.conf):
 
-    map ctrl+shift+t no_op
-    map ctrl+alt+t new_tab     (ALT never appears in the ghost - safe re-map)
+    map ctrl+shift+tab no_op
+    map ctrl+shift+grave no_op
+    # (ctrl+shift+escape was already discard_event'd by the reporter)
 
 This kills the kitty-window spawns *specifically*, zero flashing. Backups
 saved (`kitty.conf.semico-bak`). Same treatment is recommended for any
@@ -139,9 +140,9 @@ invisible.
 | ghost chord at the app level | kitty disposition | status |
 |---|---|---|
 | `ctrl+shift+escape` | reporter had *already* no-op'd it (`discard_event`) — well designed | ✅ safe |
-| `ctrl+shift+t` | was `new_tab` | ✅ no_op + alt-based re-map |
+| `ctrl+shift+t` | was `new_tab` | ⛔ **never reachable** (contains `T`/0x17 — no letter byte has ever appeared in a ghost frame) → the temporary no_op was **reverted**, `new_tab` restored |
 | `ctrl+shift+tab` | **not a kitty default** — safe to no_op | ✅ no-op added |
-| `ctrl+shift+enter` | not a kitty default | ✅ no-op added |
+| `ctrl+shift+enter` | not a kitty default (verified in kitty 0.49.2) | ⚠️ added speculatively on the single Enter escalation, then **removed** — it defended nothing. Re-add only if a future capture shows Enter becoming routine |
 | `ctrl+shift+grave` | not a kitty default | ✅ no-op added |
 | plain `Tab` / `Esc` / `Grave` / `Caps` **without modifiers** | kitty passes them to the running program as normal keys — *cannot* be globally no-op'd without breaking typing | ⚙️ handled only by the filter-daemon design (drop column-0 keys during wedge-suppression windows) |
 | `Caps` state key | kernel handles CapsLock state (LED + kbd lock) — kitty cannot no-op it | 🧩 wedge self-clears (press Caps once manually to undo a false toggle) |
@@ -155,3 +156,34 @@ the Tab key), for which kitty has **no default action**. The no-op approach
 above closes every ghost chord that *could* exist, while the plain-key
 members of the column remain the filter daemon's domain (they are typing
 keys with legit uses).
+
+## Correction of record #2 (2026-11-03, later same day)
+
+Two items from the first armor pass are **withdrawn**, after the reporter
+pointed out (a) `Ctrl+Alt+T` is their KDE *konsole launcher* global shortcut
+and (b) `ctrl+shift+enter` had no evidentiary basis:
+
+1. **`map ctrl+alt+t new_tab` — removed.** It collided with a real global
+   shortcut (KWin grabs it before the app even sees it), and it was
+   unnecessary: the ghost never emits Alt.
+2. **`map ctrl+shift+t no_op` — removed, `new_tab` restored.** The ghost
+   cannot emit any letter byte, so the chord was never reachable. The no_op
+   merely destroyed a working shortcut.
+3. **`map ctrl+shift+enter no_op` — removed** after verifying it is not a
+   kitty default binding in 0.49.2 (it was pure speculation layered on the
+   one escalated frame).
+
+**Final deployed armor = exactly the ghost's reachable chord set, nothing more:**
+
+| Chord | Reachable from ghost bytes? | Disposition |
+|---|---|---|
+| `ctrl+shift+tab` | yes (mods 0x03 + `0x2B`) | `no_op` |
+| `ctrl+shift+grave` | yes (mods 0x03 + `0x35`) | `no_op` |
+| `ctrl+shift+escape` | yes (mods 0x03 + `0x29`) | `discard_event` (pre-existing) |
+| `ctrl+tab`, `shift+tab`, `ctrl+grave`, … | yes (single-modifier variants) | not bound in kitty → nothing to do |
+| `ctrl+shift+t`, `Ctrl+Alt+T`, any letter chord | **no** | untouched |
+
+Principle worth keeping: **armor only the chords the firmware can physically
+emit.** Every extra no_op is a real shortcut you are silently donating to a
+bug. The reachable set is small and closed: `{LCtrl, LCtrl+LShift} ×
+{Esc, Tab, Grave, Caps}` (+ `Enter` on escalation).

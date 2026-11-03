@@ -124,6 +124,14 @@ happened while the keyboard was idle or at typing pauses; none mid-burst):
   — will show whether the link actually *drops*, and the HCI-level
   sequence around it.
 * Guard journaling: every wedge transport-stamped (all three modes).
+* **TP-Link UB500 PM flipped to `on`** (Nov 2, ~16:0x, user-applied):
+  the BT adapter no longer autosuspends after 2 s idle. See
+  [`analysis/POWER-MGMT-RECORD.md`](analysis/POWER-MGMT-RECORD.md) for the
+  full record + the udev rule to persist it across reboots (*not yet
+  applied* — values already in grey are the pending one-liner).
+* USB dynamic-debug (`usbcore +p`) re-armed when any USB path is re-plugged
+  (the dongle/wired trace would show any suspend/resume annotations
+  around the wedge).
 * USB dynamic-debug: re-arm (`echo "module usbcore +p" >
   /sys/kernel/debug/dynamic_debug/control`) **before plugging the dongle
   back in**, so a wired/dongle wedge lands with suspend/resume trace

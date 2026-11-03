@@ -88,6 +88,32 @@ transport-differential observations so far.
   a manual power-cycle if a storm hits; **avoid BT for
   reliability-critical sessions** until a firmware-level fix exists.
 
+## Escalation observation (2026-11-02 23:55): frequency is *up*, and the bundle keys are CODER keys
+
+* Tonight's soak: 9 HITs / 7 events in 7.6 h of *active* use — under
+  usage-normalization, the wedge rate during **active coding** is the
+  highest recorded. The 22:23 cluster (4 frames in 5 s) and the 23:31
+  cluster (3 frames in 7 s) are mid-typing mini-storms.
+* **Hypothesis v2 (typing-pattern, now testable)**: the bundle keys are
+  *exactly* a programmer's reflex keys — `ESC`, `TAB`, `` ` `` (and Caps).
+  VS Code/terminal work hammers all three constantly; if the firmware
+  race lives in its multi-key/ghosting-cancellation buffer, heavy chords
+  of *those keys* maximize the trigger probability. Prediction: a wedge
+  burst should follow, within seconds, a burst of real `ESC`/`TAB`/`` ` ``
+  keystrokes.
+* **Instrumentation upgraded for the test**:
+  `~/redragon-firmware/resilient-capture.py` — auto-reconnecting evdev
+  logger (survives `OSError 19` wedge link-drops, rescans live) —
+  streaming `/tmp/opencode/bt-evdev.log` continuously, plus a fresh
+  `btmon` HCI snoop at `/tmp/opencode/bt-hci.snoop`. The next wedge's
+  *pre-keystroke timeline* becomes diffable: if every wedge follows a
+  recent chord of bundle-keys, we have a *behavioral* workaround at OS
+  level (kanata tap-delay on those keys to de-sync the chord!) — worth
+  zero flashing.
+* Cheap datapoint: **battery level** — charge to full and observe a
+  day; a battery near a low-voltage protection threshold can exacerbeate
+  flaky firmware states (unverified, but zero-cost to check).
+
 *(original documented reasoning below, kept for the record)*
 
 ## Hypothesis consequences (original, pre-soak)

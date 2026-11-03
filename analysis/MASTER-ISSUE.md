@@ -62,7 +62,7 @@ Install: `sudo ./install.sh` (see README). Live log:
 | 4 | **Keepalive experiment** (hypothesis from sister case): SEMICO firmware has a *watchdog* that misbehaves when host vendor traffic is quiet (documented for `1a2c:4e85` in montech's cooler driver) → send a benign vendor ping every 30–60 s; if idle wedges *stop*, we have prevention, not just cure | designed; run after #2 |
 | 5 | Publish evidence to sister-victim channels (Fedora `1a2c:7807` thread, r/linux4noobs `1a2c:4094` thread, `dokutan/rgb_keyboard#26` cross-link) — first byte-level public record anywhere | pending |
 | 5b | **BT mode: shipped** — user paired the board over BT (more stable, still wedges occasionally); guard v5 detects BT wedges (`0005:1A2C:7FFF`/uhid) & journals them. Cure impossible over BT (vendor channel absent — verified live). Detection-only, like the roadmap predicted | **shipped 2026-11-02** |
-| 6 | RMA packet (`analysis/*` byte ledger + transport-dual repro) if the keyboard's warranty still applies | optional |
+| 6a | **Vendor support email sent → support@redragon.com (Nov 2, 2026)** — byte-evidence report + firmware request + warranty-case question (letter: `analysis/vendor-support-email.md`; composer page: `analysis/vendor-support-email.html`). Awaiting reply; follow-ups: diff any received firmware vs `defineV9` (sha256 `728f97e5…`), record vendor acknowledgment in this ledger | ⏳ awaiting reply |
 
 ## Rung items (the custom-firmware ladder — FILED as future work)
 

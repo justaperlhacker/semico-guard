@@ -132,3 +132,26 @@ It does not fix the underlying defect — the guard still journals
 everything, the wedge still fires — but the hideous symptoms become largely
 invisible.
 
+
+## Complete chord table for kitty (2026-11-03, after the escape-question from
+## the reporter: "what about tab?")
+
+| ghost chord at the app level | kitty disposition | status |
+|---|---|---|
+| `ctrl+shift+escape` | reporter had *already* no-op'd it (`discard_event`) — well designed | ✅ safe |
+| `ctrl+shift+t` | was `new_tab` | ✅ no_op + alt-based re-map |
+| `ctrl+shift+tab` | **not a kitty default** — safe to no_op | ✅ no-op added |
+| `ctrl+shift+enter` | not a kitty default | ✅ no-op added |
+| `ctrl+shift+grave` | not a kitty default | ✅ no-op added |
+| plain `Tab` / `Esc` / `Grave` / `Caps` **without modifiers** | kitty passes them to the running program as normal keys — *cannot* be globally no-op'd without breaking typing | ⚙️ handled only by the filter-daemon design (drop column-0 keys during wedge-suppression windows) |
+| `Caps` state key | kernel handles CapsLock state (LED + kbd lock) — kitty cannot no-op it | 🧩 wedge self-clears (press Caps once manually to undo a false toggle) |
+
+## Correction of record
+An earlier note suggested the phantom kitty tabs came via
+`ctrl+shift+t → new_tab`. That hypothesis is **withdrawn**: the recorded
+ghost frames contain no letter-T (0x17) byte — the actual chord reaching
+focused kitty windows with the ghost set was *ctrl+shift+tab* (modifiers +
+the Tab key), for which kitty has **no default action**. The no-op approach
+above closes every ghost chord that *could* exist, while the plain-key
+members of the column remain the filter daemon's domain (they are typing
+keys with legit uses).

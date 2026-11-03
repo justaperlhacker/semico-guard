@@ -100,3 +100,35 @@ We'll fold the exact wording into the "Upgrading The Support Email"
 follow-up once `semico-filter` exists (or as a reply in the open thread —
 but we've been waiting for a support answer, so a pre-emptive email
 follow-up is optional).
+
+## Workaround actually deployed (2026-11-03): app-level chord armor (kitty)
+
+Live evidence (Nov 3, 00:34 storm): the ghost arrives in BT mode with
+modifier bits *held* (LCtrl+LShift = 0x03) inside the ghost frame, plus a
+TAB (and an ENTER in one escalated frame). That chord lands on focused
+apps. In the reporter's own kitty config, the app-level chord
+`ctrl+shift+t` was mapped to `new_tab` — so the ghost spawned real kitty
+tabs and help windows.
+
+MITIGATION applied: app-level "no-op the ghost chords" (kitty.conf):
+
+    map ctrl+shift+t no_op
+    map ctrl+alt+t new_tab     (ALT never appears in the ghost - safe re-map)
+
+This kills the kitty-window spawns *specifically*, zero flashing. Backups
+saved (`kitty.conf.semico-bak`). Same treatment is recommended for any
+app with chords composed ONLY of ghost-bundle keys (Tab/Esc/Enter/Grave/Caps
++ Ctrl and/or Shift) that should be ignored.
+
+(In niri, global binds all require Mod=Super — never part of the ghost — so
+the compositor-level shortcuts were already safe. Other apps (editor/IDE,
+browsers) can get the same treatment per-config: remap any chord that uses
+only ghost-bundle keys with an ALT-based variant, since Alt is never in the
+ghost payload.)
+
+This MEASURABLY reduces the wedge's real-world impact in BT mode while
+resetv2 (over-the-air factory reset) and the custom-firmware rungs wait.
+It does not fix the underlying defect — the guard still journals
+everything, the wedge still fires — but the hideous symptoms become largely
+invisible.
+

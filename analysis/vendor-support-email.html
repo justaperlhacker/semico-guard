@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>semico-guard — Redragon support email composer</title>
+<style>
+  body { font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; background:#101418; color:#dde; max-width: 900px; margin: 40px auto; padding: 0 24px; }
+  .card { background:#1a2026; border:1px solid #2a3a4a; border-radius: 12px; padding: 22px; margin-bottom: 18px; }
+  h1 { font-size: 20px; color: #8ff; } .lbl { color: #8ab; font-weight: 600; }
+  pre, textarea { width: 100%; box-sizing: border-box; background: #0b0f12; color: #cde; border: 1px solid #334; border-radius: 8px; padding: 14px; white-space: pre-wrap; font: 13px/1.45 ui-monospace, monospace; max-height: 420px; overflow: auto; }
+  button, a.btn { display:inline-block; background:#2b6cb0; color:#fff; border:none; border-radius: 8px; padding: 10px 18px; font-size: 15px; cursor: pointer; text-decoration: none; margin: 4px 8px 4px 0; }
+  button:hover, a.btn:hover { background: #3b7cc4; }
+  .ok { color: #6f6; }
+  small { color:#89a; }
+</style></head>
+<body>
+<h1>semico-guard → Redragon support email</h1>
+
+<div class="card">
+  <span class="lbl">TO:</span> <code>support@redragon.com</code><br/>
+  <span class="lbl">SUBJECT:</span> <code>Redragon K552-KRS phantom-key firmware wedge (byte-level evidence attached)</code>
+</div>
+
+<div class="card">
+  <button id="cp">📋 Copy email body to clipboard</button>
+  <a class="btn" href="https://mail.google.com/mail/?view=cm&fs=1&to=support@redragon.com&su=Redragon%20K552-KRS%20phantom-key%20firmware%20wedge%20(byte-level%20evidence%20attached)" target="_blank">✉️ Open Gmail compose (To + Subject prefilled)</a>
+  <small>Brave → your Gmail account → popup with To+Subject pre-sorted. Then click in the body and paste (Ctrl+V). Copy first! </small>
+  <p class="ok" id="ack" style="display:none">Body copied — now open Gmail compose → click inside the message area → Ctrl+V → personalize the signature → SEND.</p>
+</div>
+
+<div class="card">
+  <small>Manual fallback: select-all in this box and copy with Ctrl+C.</small><br/>
+  <textarea id="body" rows="14"></textarea>
+</div>
+
+<script>
+const bodyText = `Redragon K552-KRS (wireless TKL, tri-mode) — reproducible phantom-key firmware wedge (byte-level evidence attached)` + "\n\n" + window.__BODY__;
+document.getElementById('body').value = bodyText;
+</script>
+<script src="body.js"></script>
+document.getElementById('cp').onclick = async () => {
+  try { await navigator.clipboard.writeText(bodyText); }
+  catch (_) { const t = document.getElementById('body'); t.select(); document.execCommand('copy'); t.blur(); }
+  const a = document.getElementById('ack'); a.style.display = 'block';
+};
+window.onload = () => { const b = document.getElementById('body'); b.scrollTop = 0; };
+</script>
+</body></html>

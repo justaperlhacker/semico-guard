@@ -12,7 +12,7 @@ and what conclusions can be drawn from the effect.
 | TP-Link UB500 (BT adapter) | `2357:0604` | `1-11` | **auto** | **2 s** | the *only* active-power-managed device while BT-only |
 | K552 wired / dongle | `1a2c:7504` / `1a2c:7fff` | (not connected in BT-period) | `on` whenever connected | — | runtime PM disabled by default on our ports |
 
-## Change candidate (host-side PM disable)
+## Change candidate (host-side PM disable) — **APPLIED Nov 2, REVERTED Nov 3**
 
 ```
 # quick fix (until reboot):
@@ -23,6 +23,13 @@ sudo sh -c 'echo on > /sys/bus/usb/devices/1-11/power/control'
     ATTR{idProduct}=="0604", ATTR{power/control}="on"
 sudo udevadm control --reload && sudo udevadm trigger
 ```
+
+**RESOLUTION (Nov 3, 2026):** the rule file was **removed** and the runtime
+value flipped back to `auto` (fleet restored to stock PM). Reasons: the
+soak proved host/OS PM is *exonerated* as the wedge trigger (see the
+"Conclusion recorded — Nov 2, 23:38" outcome above), so keeping the
+adapter awake served no purpose. If a future experiment needs the adapter
+kept awake again, re-apply the rule exactly as written here.
 
 **Rationale:** with `control=auto` the adapter *itself* suspends 2 s after
 its last USB exchange. Every subsequent BT keystroke must resume the USB

@@ -40,20 +40,56 @@ moment the wedge signature fired, Nov 2 13:17).
   those with `USBDEVFS_RESET` already (and wired `power/control` was already
   `on`).
 
-## Hypothesis consequences
+| Observation after the PM flip (Nov 2, ~16:00 → 23:38 soak) | Interpretation |
+|---|---|
+| BT wedges **continued** — 9 HITs / 7 events (19:34, 22:23 ×4, 23:20, 23:31 ×3), **several mid-typing** (user: "it was happening mid typing" during coding/game sessions) | host PM (adapter autosuspend) is **exonerated**: wedges fire with the adapter awake, mid-burst of active typing — the keyboard's own 1–2 min idle sleep can't have triggered *mid-typing* either. The remaining model: an **internal race in the SEMICO MCU** (scan/LED/Fn handling timing bug) that fires semi-randomly regardless of power state |
+| Wedge frequency similar to pre-flip (~1 event / 20–40 min of active use) | the PM flip did not change frequency — same conclusion |
+| Each event still self-settled ~10 s (matches the earlier BT basetine) | unchanged behavior apart from time-of-day |
+
+**Conclusion recorded (Nov 2, 23:38):** power management — *both host-side*
+(now disabled: adapter awake) *and* the OS-level HID stack — has been ruled
+out as the wedge trigger. The defect is an in-MCU race condition, present
+in every transport, in idle **and** mid-typing.
+
+**Practical recommendation while the firmware stays unchanged:**
+* **wired mode for gaming/coding sessions** — the only mode with a full
+  MCU auto-cure (~1 s, invisible with the guard);
+* radio (2.4G) will join "instant cure" once `resetv2/` lands;
+* BT remains the *light*-mode (rare wedges but 10-s stalls + manual
+  power-cycle if a storm hits) — for a game, a 10-s freeze is fatal, so
+  avoid BT for reliability-critical sessions until a firmware-level
+  resolution exists.
+
+## Conclusion recorded — Nov 2, 23:38 (soak result: **host/OS PM exonerated**)
+
+Test executed: the user flipped the TP-Link UB500 BT adapter from
+`power/control=auto` (2-s autosuspend) to `on` (kept awake) and soaked the
+keyboard in BT mode through an evening of *active* typing/coding/gaming
+(16:00 → 23:38). Result: **wedges continued at the same rate** (9 HITs /
+7 events: 19:34, 22:23 ×4, 23:20, 23:31 ×3), **several mid-typing** —
+"it was happening mid typing" (user, verbatim).
+
+Eliminated as triggers by this soak:
+* the OS-side USB autosuspend of the BT adapter (was kept awake),
+* the OS HID stack (no remappers; kanata disabled),
+* the keyboard's own idle-sleep boundary as a *necessary* trigger
+  (wedges fired **mid-typing**, not just at idle boundaries).
+
+Which leaves the defect model as: **an internal race in the SEMICO MCU**
+(key-matrix / LED / Fn-combination handling timing), firing semi-randomly
+on idle *and* active use, on every transport — consistent with all
+transport-differential observations so far.
+
+**Practical recommendation (until firmware-level resolution):**
+* **wired mode for gaming/coding** — the only mode with a full MCU
+  auto-cure (~1 s, invisible under the guard);
+* radio (2.4G) joins "instant cure" once `resetv2/` lands;
+* BT remains the "light" configuration — rare wedges, but 10-s stalls and
+  a manual power-cycle if a storm hits; **avoid BT for
+  reliability-critical sessions** until a firmware-level fix exists.
+
+*(original documented reasoning below, kept for the record)*
+
+## Hypothesis consequences (original, pre-soak)
 
 If BT wedges are (at least partly) *host-PM-induced*:
-
-| Observation after the PM flip | Interpretation |
-|---|---|
-| BT wedges **stop** or frequency drops sharply | the adapter's 2 s autosuspend was a *major contributor*; keep BT PM off forever (udev rule does this), wedges that remain are the MCU's own idle race |
-| BT wedges **unchanged** in rate and shape | host PM is *exonerated* for BT; the wedge trigger sits inside the keyboard's internal idle path (battery-powered MCU logic), which then feeds the keepalive-experiment theory directly |
-| BT wedges reduce but persist | both layers contribute (host PM and keyboard idle logic); the LED-keepalive experiment should then target the remainder |
-
-## Conclusion recorded
-
-A BT-mode daily soak with this flipped will answer the question with data —
-the guard journals every wedge anyway (with transport stamps), and
-`btmon` maintains a full HCI trace in `/tmp/opencode/bti.btmon` for the
-link-drop particulars (e.g., whether a wedge produces an actual
-*HCI disconnection event*).

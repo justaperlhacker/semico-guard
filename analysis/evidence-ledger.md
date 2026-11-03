@@ -4,6 +4,54 @@ All frames captured from raw `hidraw` reads on the SEMICO keyboard's
 boot-keyboard interface (iface 0). Timestamps local EDT, 2026-10-30 →
 2026-10-31.
 
+## THE GHOST BUNDLE EXPLAINED — it is the keyboard's matrix COLUMN 0 (verified 2026-11-03)
+
+**The app's own factory layout file** (`kb-k600t.xml`, extracted from the
+KUMARA app; the `row_col` attribute maps the physical scan matrix) places
+these keys on **matrix column 0**:
+
+| row_col | key | HID usage |
+|---|---|---|
+| 0#0 | **Esc** | 0x29 |
+| 1#0 | **` ~ (grave)** | 0x35 |
+| 2#0 | **Tab** | 0x2b |
+| 3#0 | **CapsLock** (+ a duplicate "L" slot) | 0x39 |
+| 4#0 | **Shift** (code 0xe1) | modifier bit 0x02 |
+| 5#0 | **Ctrl** (code 0xe0) | modifier bit 0x01 |
+
+Cross-check with everything we recorded:
+* the ghost bundle's *keys* = **Esc + Grave + Tab + Caps** = the FOUR typing
+  keys of column 0;
+* the phantom modifier traffic = **LShift + LCtrl held** = the two modifier
+  keys of column 0;
+* over BT the ghost frames carry modifier bits *2|1 set* (0x03 = the two
+  modifiers) and *modifier* prefixes (01) — i.e. **over BT, the firmware
+  honestly reports the column's modifier keys as active**.
+
+**Every wedge session we recorded, across wired and 2.4G and BT transports,
+matches exactly what a *stuck scan of matrix column 0* produces.** This is
+a hardware-defined signature, user-independent:
+
+* the user's typing habits are irrelevant — the ghost set is the *matrix*
+  set (the reporter does not press ` ~ at all, yet the bundle always
+  includes it);
+* the wedge fires whether the user is pressing keys or not (idle or
+  mid-typing): the *scan line* is what glitches, not a key chord;
+* the same four keys appear every time, across days, on all transports —
+  a scanning state that is local to that column.
+
+## Why this points *inside* the firmware (and why the LEDs matter)
+
+The CapsLock LED (the red light next to A during wedges) is driven on the
+same scan cycle — the LED controller shares the MCU's scan timing. The
+windows where the wedge most often fires are those *with lighting state
+changes* (Fn+Space toggles, lighting auto-cycles, the power-on backlight
+sweep): the intervals where a *lighting update can overlap the start of a
+scan pass* (column 0 is scanned *first*). A race there would:
+* read the whole column as pressed (our ghost bundle);
+* flicker LEDs (the Caps LED the user saw lit with no host involvement);
+* drop the *entire* scan/USB session logic into a bad state (the wedge).
+
 ## The ghost bundle
 
 `rid ∈ {0x02, 0x03}`, `keys[]` containing `{0x29 ESC, 0x2B TAB, 0x35 GRAVE}`

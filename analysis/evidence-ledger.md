@@ -82,6 +82,11 @@ keyboard is idle**, in wired mode AND over the 2.4G dongle.
 | 13:54:51 | **2.4G dongle** | 1 frame → guard reset ok; 2 follow-up frames swallowed before self-clear | |
 | 14:43:57–:44:09 | **2.4G dongle** | 8 frames / **guard resets ×2** / no disconnects | user: "takes a while to get back into functional mode" (~10+ s) — radio-mode baseline |
 | **Nov 2 13:17:57 + 13:18:07** | **Bluetooth** (`0103 0029 2b35 39…` = `[mods LCtrl-down][rid3][mods 0x03][keys…]`) | 2 frames 10 s apart — **third ghost encoding found**: BT rides a modifier-frame prefix and sets modifier bits *inside* the rid3 bundle (unset over USB!) | guard v5 caught live; user experienced the stuck state |
+| **Nov 3 00:05:06–:07** | Bluetooth | 2-frame burst; **no keystrokes in the preceding 60 s** (verified via keystroke timeline) — idleness NOT required | hypothesis v2 (typing-echo) dead |
+| **Nov 3 00:34:24–:29** | Bluetooth | **8 frames, storm**; **ENTER (0x28) joined the bundle** in two frames (`0101 0028 292b3539…`) | user: kitty help *terminals* popped up repeatedly (their desktop shortcuts/terminal actions fired on the ghost set). The resilient evdev recorder died again at the exact wedge second (`OSError 19`) — **3-for-3: every BT wedge so far dropped the link**. Escalation: the wedge is no longer strictly column-0; it now spills into other matrix columns (Enter is on a different column) |
+
+→ Per-mode recovery summary: [`MODE-DIFFERENTIAL.md`](MODE-DIFFERENTIAL.md).
+| **Nov 2 13:17:57 + 13:18:07** | **Bluetooth** (`0103 0029 2b35 39…` = `[mods LCtrl-down][rid3][mods 0x03][keys…]`) | 2 frames 10 s apart — **third ghost encoding found**: BT rides a modifier-frame prefix and sets modifier bits *inside* the rid3 bundle (unset over USB!) | guard v5 caught live; user experienced the stuck state |
 
 * **BT frame shapes** (see `bt-hidraw-snapshot.log` — BT boot report `[mods,
   res, keys…]` with *no report id byte*; and the ghost variant riding the

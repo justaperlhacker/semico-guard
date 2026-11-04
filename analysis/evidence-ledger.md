@@ -97,6 +97,13 @@ keyboard is idle**, in wired mode AND over the 2.4G dongle.
   also drop the *Bluetooth* link, not just over USB. Another data point for
   "the wedge is in the MCU, spanning every transport it speaks."
 
+| **Nov 3 00:39:09–:11, :30** | Bluetooth | 4 frames (`0103 0029 2b35 39…`, mods=01 — the rider-prefix encoding) | guard journals only (no vendor channel) |
+| **Nov 3 00:42:39** | Wired (`hidraw1`) | 1 frame `0300 292b3539 0000` (mods=00 plain ghost) | 1 reset → cured |
+| **Nov 3 15:52:11 / 15:53:06 / 15:57:00** | Wired | 3 single-frame wedges, 55 s / 4 min apart (`0300…` mods=00) | each 1 reset → cured instantly (wired baseline) |
+| **Nov 3 19:48:02–:27** | Wired | **43 frames over 25 s — worst WIRED storm on record** (`0300 292b3539 0000`, mods=00) | 4 × USB reset inside the episode (cooldown 3 s); keyboard clean from 19:48:27 onward (~2 h+ silent) |
+
+Day totals: Nov 1 = 0 frames, Nov 2 = 62, Nov 3 = 61 — the elevated plateau is holding, and the mix now includes the first multi-reset wired storm.
+
 → Per-mode recovery summary: [`MODE-DIFFERENTIAL.md`](MODE-DIFFERENTIAL.md).
 
 ## Modifier trail (the phantom keys at the OS level)
